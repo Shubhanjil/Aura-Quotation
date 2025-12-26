@@ -1,8 +1,7 @@
-// PageTwo.js
 import React, { useState, useRef, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import './PageOne.css';
+import './PageTwo.css';
 import logo from './aura-black-logo.png';
 
 function PageTwo() {
@@ -75,18 +74,36 @@ function PageTwo() {
 
     const totalCost = coreSetTotal + otherSetsTotal;
 
+    // --- UPDATED PRINT FUNCTION ---
     const handlePrint = async () => {
         const element = previewRef.current;
-        const canvas = await html2canvas(element);
-        const imgData = canvas.toDataURL('image/png');
         const clientName = client.name.trim().replace(/\s+/g, '_') || 'Client';
 
-        const pdf = new jsPDF();
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        // 1. Capture with high scaling
+        const canvas = await html2canvas(element, {
+            scale: 4, // 4 scales the resolution up 4x for HD quality
+            useCORS: true, // Ensures external images (like logos) don't break the canvas
+            logging: false, // Disables console logging
+            backgroundColor: '#ffffff' // Ensures background is white, not transparent
+        });
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        const imgData = canvas.toDataURL('image/png');
+
+        // 2. Create PDF
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth(); // A4 Width in mm
+        const pdfHeight = pdf.internal.pageSize.getHeight(); // A4 Height in mm
+
+        const imgProps = pdf.getImageProperties(imgData);
+        
+        // Calculate the height of the image to fit the A4 width
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        // Add image to PDF. 
+        // Logic: If the content is taller than 1 page, you might need multi-page logic, 
+        // but for a single invoice page, this fits it to width.
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+        
         pdf.save(`invoice_${clientName}_${serialNoInv}.pdf`);
 
         // Increment serial counter in localStorage
