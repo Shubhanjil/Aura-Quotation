@@ -79,34 +79,37 @@ function PageTwo() {
         const element = previewRef.current;
         const clientName = client.name.trim().replace(/\s+/g, '_') || 'Client';
 
-        // 1. Capture with high scaling
+        // 1. Capture at Scale 2 (Good balance of quality vs size)
         const canvas = await html2canvas(element, {
-            scale: 4, // 4 scales the resolution up 4x for HD quality
-            useCORS: true, // Ensures external images (like logos) don't break the canvas
-            logging: false, // Disables console logging
-            backgroundColor: '#ffffff' // Ensures background is white, not transparent
+            scale: 3, // 2 is usually enough for clear text. Use 3 if you need it sharper.
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff' // Crucial for JPEG to avoid black backgrounds
         });
 
-        const imgData = canvas.toDataURL('image/png');
+        // 2. Convert to JPEG with 0.75 (75%) quality
+        const imgData = canvas.toDataURL('image/jpeg', 0.75);
 
-        // 2. Create PDF
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth(); // A4 Width in mm
-        const pdfHeight = pdf.internal.pageSize.getHeight(); // A4 Height in mm
+        // 3. Create PDF with compression enabled
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: 'a4',
+            compress: true
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
 
         const imgProps = pdf.getImageProperties(imgData);
-        
-        // Calculate the height of the image to fit the A4 width
         const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-        // Add image to PDF. 
-        // Logic: If the content is taller than 1 page, you might need multi-page logic, 
-        // but for a single invoice page, this fits it to width.
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+        // Add image as JPEG
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
         
         pdf.save(`invoice_${clientName}_${serialNoInv}.pdf`);
 
-        // Increment serial counter in localStorage
+        // Increment serial counter logic (same as before)
         const yy = serialNoInv.slice(0, 2);
         const mm = serialNoInv.slice(2, 4);
         const key = `invoice-serial-${yy}${mm}`;
@@ -240,3 +243,4 @@ function PageTwo() {
 }
 
 export default PageTwo;
+
