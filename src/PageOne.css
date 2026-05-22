@@ -108,24 +108,35 @@
     margin-bottom: 5px;
 }
 
+.upper {
+    display: flex;
+    justify-content: flex-start; /* Aligns both logo and details to the left */
+    align-items: flex-start;     /* Perfectly aligns their tops */
+    gap: 0px;                   /* Adjust this value to change the spacing between the logo and details */
+    margin-top: 10px;
+    padding: 0 20px;             /* Adds clean padding on both sides */
+}
+
 .logo {
     display: flex;
-    margin-left: 20px;
-    margin-top: 10px;
+    /* Cleaned up older margins */
 }
 
 .details {
-    margin-top: -160px;
-    margin-left: 400px;
     font-size: 14px;
-    flex: 1;
+    text-align: left;            /* Ensures all text inside details is left-aligned */
+}
+
+/* Clean spacing between the paragraphs inside details */
+.details p {
+    margin: 4px 0;
 }
 
 .hellomsg{
     font-size: 15px;
     display: block;
     margin-left:20px;
-    margin-top: 75px;
+    margin-top: 10px;
 }
 
 

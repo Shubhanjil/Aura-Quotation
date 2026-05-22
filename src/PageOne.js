@@ -17,6 +17,19 @@ function PageOne() {
     const previewRef = useRef();
     const [isCompleteSet, setIsCompleteSet] = useState(false);
     const [extraTerms, setExtraTerms] = useState("");
+    
+    // NEW: State to manage if Area is optional/visible
+    const [showArea, setShowArea] = useState(true);
+
+    // State to manage visibility of standard terms and conditions
+    const [visibleTerms, setVisibleTerms] = useState({
+        advance: true,
+        firstDraft: true,
+        finalDraft: true,
+        completeChanges: true,
+        interiorElevationChanges: true,
+        dualChanges: true
+    });
 
     // Generate serial number on component mount
     useEffect(() => {
@@ -44,6 +57,10 @@ function PageOne() {
         setSerialNoQuotQuot(e.target.value);
     };
 
+    const handleTermToggle = (termKey) => {
+        setVisibleTerms(prev => ({ ...prev, [termKey]: !prev[termKey] }));
+    };
+
     const [setItems, setSetItems] = useState([
         { name: 'Planning', amount: '' },
         { name: 'Elevation', amount: '' },
@@ -63,9 +80,9 @@ function PageOne() {
     const coreSetCount = setItems.filter(item => coreSets.includes(item.name)).length;
     const isCoreSetComplete = isCompleteSet && coreSetCount === coreSets.length;
 
-    // Calculate total for core sets only once:
+    // UPDATED: Calculate total for core sets only if showArea is true, otherwise fallback to 0 or manual entries
     const coreSetTotal = isCompleteSet
-        ? (isCoreSetComplete ? (parseFloat(client.area) * 25 || 0) : 0)
+        ? (isCoreSetComplete && showArea ? (parseFloat(client.area) * 25 || 0) : 0)
         : setItems
             .filter(item => coreSets.includes(item.name))
             .reduce((acc, item) => acc + (parseFloat(item.amount) || 0), 0);
@@ -100,7 +117,7 @@ function PageOne() {
         setSerialNoQuotQuot(nextSerial);
     };
 
-    // === NEW: compute selected sets & display text for the preview ===
+    // === compute selected sets & display text for the preview ===
     const interiorItem = setItems.find(i => i.name === 'Interior');
     const hasInteriorAmount = interiorItem && parseFloat(interiorItem.amount) > 0;
 
@@ -138,6 +155,16 @@ function PageOne() {
             .filter(item => parseFloat(item.amount) > 0)
             .map(item => ({ name: item.name, amount: parseFloat(item.amount) }));
 
+    // Check if any terms (standard or extra) are going to be visible
+    const isAnyTermVisible = 
+        (visibleTerms.advance) ||
+        (visibleTerms.firstDraft) ||
+        (visibleTerms.finalDraft) ||
+        (isCompleteSet && visibleTerms.completeChanges) ||
+        ((selectedSets.includes('Interior') || (selectedSets.includes('Elevation') && !isCompleteSet)) && visibleTerms.interiorElevationChanges) ||
+        (selectedSets.includes('Interior') && selectedSets.includes('Elevation') && visibleTerms.dualChanges) ||
+        extraTerms.trim() !== "";
+
     return (
         <div className="quotation-container">
             <div className="left-form">
@@ -146,7 +173,27 @@ function PageOne() {
                 <input name="name" placeholder="Name" value={client.name} onChange={handleChange} />
                 <input name="contact" placeholder="Contact" value={client.contact} onChange={handleChange} />
                 <input name="city" placeholder="City" value={client.city} onChange={handleChange} />
-                <input name="area" placeholder="Area" value={client.area} onChange={handleChange} />
+                
+                {/* UPDATED: Wrapper to put Area Input and Visibility Checkbox in the same row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <input 
+                        name="area" 
+                        placeholder="Area" 
+                        value={client.area} 
+                        onChange={handleChange} 
+                        disabled={!showArea}
+                        style={{ margin: 0, flex: 1 }} 
+                    />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        <input 
+                            type="checkbox" 
+                            checked={showArea} 
+                            onChange={(e) => setShowArea(e.target.checked)} 
+                        />
+                        Include Area
+                    </label>
+                </div>
+
                 <input name="descript" placeholder="Description" value={client.descript} onChange={handleChange} />
 
                 {/* Complete Set Radio Option */}
@@ -211,33 +258,83 @@ function PageOne() {
                 </div>
 
                 <button className="add-set-button" onClick={addCustomSet}>+ Add Set</button>
+
+                {/* Terms Selection Configuration Options */}
+                <div className="terms-config-section" style={{ marginTop: '20px', borderTop: '1px solid #ddd', paddingTop: '15px' }}>
+                    <h3>Select Terms to Include</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={visibleTerms.advance} onChange={() => handleTermToggle('advance')} />
+                            50% advance amount in all cases.
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={visibleTerms.firstDraft} onChange={() => handleTermToggle('firstDraft')} />
+                            30% after 1st draft delivery.
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={visibleTerms.finalDraft} onChange={() => handleTermToggle('finalDraft')} />
+                            20% after finalization of draft.
+                        </label>
+                        
+                        {isCompleteSet && (
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={visibleTerms.completeChanges} onChange={() => handleTermToggle('completeChanges')} />
+                                Extra charges for finalized phase adjustments.
+                            </label>
+                        )}
+
+                        {(selectedSets.includes('Interior') || (selectedSets.includes('Elevation') && !isCompleteSet)) && (
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={visibleTerms.interiorElevationChanges} onChange={() => handleTermToggle('interiorElevationChanges')} />
+                                Charges applicable for changes after 1st draft.
+                            </label>
+                        )}
+
+                        {selectedSets.includes('Interior') && selectedSets.includes('Elevation') && (
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input type="checkbox" checked={visibleTerms.dualChanges} onChange={() => handleTermToggle('dualChanges')} />
+                                Charges for dual Interior/Elevation changes after draft.
+                            </label>
+                        )}
+                    </div>
+                </div>
+
                 <textarea
                     className="border rounded-md w-full p-2 mt-3 text-sm"
                     rows={3}
                     placeholder="Add extra terms and conditions..."
                     value={extraTerms}
                     onChange={(e) => setExtraTerms(e.target.value)}
+                    style={{ marginTop: '15px' }}
                 ></textarea>    
                 <button className="print-pdf-button" onClick={handlePrint}>Print to PDF</button>
             </div>
 
             <div className="right-preview" ref={previewRef}>
                 <h2 className='Qname'>Quotation</h2><br />
-                <div className='logo'>
-                    <img src={logo} alt="Company Logo" style={{ width: '120px', marginBottom: '10px' }} />
+                
+                {/* Horizontal row for logo and details */}
+                <div className='upper'>
+                    <div className='logo'>
+                        <img src={logo} alt="Company Logo" style={{ width: '120px', marginBottom: '10px' }} />
+                    </div>
+                    <div className='details'>
+                        <p><strong>Serial No:</strong> {serialNoQuot || '—'}</p>
+                        <p><strong>Name:</strong> {client.name || '—'}</p>
+                        <p><strong>Contact:</strong> {client.contact || '—'}</p>
+                        <p><strong>City:</strong> {client.city || '—'}</p>
+                    </div>
                 </div>
-                <div className='details'>
-                    <p><strong>Serial No:</strong> {serialNoQuot || '—'}</p>
-                    <p><strong>Name:</strong> {client.name || '—'}</p>
-                    <p><strong>Contact:</strong> {client.contact || '—'}</p>
-                    <p><strong>City:</strong> {client.city || '—'}</p>
-                </div>
+
                 <div className='hellomsg'>
                         <p><em><strong>Aura Designs</strong> is delighted to present this proposal to <strong>{client.name || 'the client'}</strong>.
                             We believe it will suit your requirements well and provide the value you are looking for.</em></p>
                         <p>As per our discussion, please find attached the quotation for the design with all necessary details</p>
                         <p><strong>Description:</strong> {client.descript || '—'}</p>
-                        <p><strong>Area:</strong> {client.area || '—'} sqft.</p>
+                        
+                        {/* UPDATED: Conditionally renders Area block only if checked */}
+                        {showArea && <p><strong>Area:</strong> {client.area || '—'} sqft.</p>}
+                        
                         <p><strong>Chosen Sets:</strong> {chosenSetsText || '—'}</p>
                 </div>
 
@@ -329,27 +426,31 @@ function PageOne() {
                         </tr>
                     </tfoot>
                 </table>
-                <div className="terms_cond_cont">
-                    <h2 className="terms_and_cond_line"><strong>Terms and Conditions:</strong></h2>
-                    <ul className="list_of_terms">
-                        <li>50% advance amount in all cases.</li>
-                        <li>30% after 1st draft delivery.</li>
-                        <li>20% after finalization of draft.</li>
+                
+                {/* Conditionally render the whole Terms section only if at least one term is checked/visible */}
+                {isAnyTermVisible && (
+                    <div className="terms_cond_cont">
+                        <h2 className="terms_and_cond_line"><strong>Terms and Conditions:</strong></h2>
+                        <ul className="list_of_terms">
+                            {visibleTerms.advance && <li>A non-refundable advance payment of 50% is required prior to project commencement.</li>}
+                            {visibleTerms.firstDraft && <li>An interim milestone payment of 30% is due immediately upon delivery of the first draft layout.</li>}
+                            {visibleTerms.finalDraft && <li>The final settlement balance of 20% is payable upon finalization of the draft, prior to handover.</li>}
 
-                        {isCompleteSet && (
-                            <li>If client asks for changes for finalized phase, extra charges will be applicable.</li>
-                        )}
+                            {isCompleteSet && visibleTerms.completeChanges && (
+                                <li>If client asks for changes for finalized phase, extra charges will be applicable.</li>
+                            )}
 
-                        {selectedSets.includes('Interior') || selectedSets.includes('Elevation' && !isCompleteSet) && (
-                            <li>Charges will be applicable after any changes in plan after the first draft is prepared.</li>
-                        )}
+                            {(selectedSets.includes('Interior') || (selectedSets.includes('Elevation') && !isCompleteSet)) && visibleTerms.interiorElevationChanges && (
+                                <li>Charges will be applicable after any changes in plan after the first draft is prepared.</li>
+                            )}
 
-                        {selectedSets.includes('Interior') && selectedSets.includes('Elevation') && (
-                            <li>Charges will be applicable after any changes in plan after the first draft is prepared.</li>
-                        )}
-                        {extraTerms && (<li>{extraTerms}</li>)}
-                    </ul>
-                </div>
+                            {selectedSets.includes('Interior') && selectedSets.includes('Elevation') && visibleTerms.dualChanges && (
+                                <li>Charges will be applicable after any changes in plan after the first draft is prepared.</li>
+                            )}
+                            {extraTerms.trim() && (<li>{extraTerms}</li>)}
+                        </ul>
+                    </div>
+                )}
             </div>
         </div>
     );
