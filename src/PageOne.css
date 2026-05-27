@@ -136,7 +136,7 @@
     font-size: 15px;
     display: block;
     margin-left:20px;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 
@@ -259,9 +259,9 @@
 
 .phases-container {
     background-color: var(--card-bg);
-    margin: 1.5rem auto;
+    margin: 1rem auto;
     margin-top: -20px;
-    padding: 1.5rem;
+    padding: 1rem;
     border-radius: 12px;
     font-family: 'Segoe UI', sans-serif;
     color: var(--text-main);
@@ -311,7 +311,8 @@
 }
 
 .terms_cond_cont{
-    margin-top: 60px;
+    margin-top: 10px;      
+    padding-top: 5px;
 }
 
 .terms_and_cond_line {
@@ -325,4 +326,18 @@
 .list_of_terms{
     font-size: 14px;
     font-weight: 200;
+}
+
+/* Styling for the print layout firm footer */
+.firm-footer {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+/* Optional: Ensure page-break configuration doesn't cut the footer oddly */
+@media print {
+    .firm-footer {
+        page-break-inside: avoid;
+    }
 }

@@ -342,7 +342,7 @@ function PageOne() {
                     {/* Render phases conditionally based on selectedSets */}
                     {selectedSets.includes('Planning') && (
                         <div className="phase">
-                            <h3>Phase 1: Architectural Planning & Design</h3>
+                            <h3>Phase: Architectural Planning & Design</h3>
                             <ul>
                                 <li><strong>Customized Floor Plan with Concept Development:</strong> Functional, aesthetic layouts tailored to your needs and vision.</li>
                                 <li><strong>Spatial Orientation Consultation (Vastu):</strong> Guidance to align your building spiritually, culturally, or traditionally.</li>
@@ -354,7 +354,7 @@ function PageOne() {
 
                     {selectedSets.includes('Elevation') && (
                         <div className="phase">
-                            <h3>Phase 2: Elevation Design</h3>
+                            <h3>Phase: Elevation Design</h3>
                             <ul>
                                 <li><strong>3D Elevation Views (Front, Side & Rear):</strong> Scaled 3D visuals showcasing exterior appearance.</li>
                                 <li><strong>2D Working Drawings & Details:</strong> Technical elevation drawings with precise measurements.</li>
@@ -365,7 +365,7 @@ function PageOne() {
 
                     {selectedSets.includes('Structural') && (
                         <div className="phase">
-                            <h3>Phase 3: Structural Design & Documentation</h3>
+                            <h3>Phase: Structural Design & Documentation</h3>
                             <ul>
                                 <li><strong>Structural Layouts (Columns, Beams & Centerlines):</strong> Comprehensive plans for column positioning, beam placements.</li>
                                 <li><strong>Foundation & Footing Details:</strong> Detailed RCC foundation and footing designs adapted to soil conditions.</li>
@@ -379,7 +379,7 @@ function PageOne() {
 
                     {selectedSets.includes('EPD') && (
                         <div className="phase">
-                            <h3>Phase 4: Electrical & Plumbing Design (EPD)</h3>
+                            <h3>Phase: Electrical & Plumbing Design (EPD)</h3>
                             <ul>
                                 <li><strong>Electrical Layout:</strong> Complete plan showing lighting points, switches, and circuits.</li>
                                 <li><strong>Plumbing Layout:</strong> Water supply system and sanitary fixture positioning.</li>
@@ -390,7 +390,7 @@ function PageOne() {
 
                     {selectedSets.includes('Interior') && (
                         <div className="phase">
-                            <h3>Phase 5: Interior Design</h3>
+                            <h3>Phase: Interior Design</h3>
                             <ul>
                                 <li><strong>2D Interior Layout:</strong> Room-wise space planning including furniture placement.</li>
                                 <li><strong>Concept Mood Boards:</strong> Visual guides for themes, colors, and styles.</li>
@@ -451,6 +451,16 @@ function PageOne() {
                         </ul>
                     </div>
                 )}
+
+                <div className="firm-footer" style={{ marginTop: '40px', paddingTop: '15px', borderTop: '1px solid #eaeaea', display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#555' }}>
+                    <div>
+                        <strong>Aura Designs</strong>
+                    </div>
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                        <span><strong>Email:</strong>auradesigns73@gmail.com</span>
+                        <span><strong>Contact:</strong> +91 9300318217</span>
+                    </div>
+                </div>
             </div>
         </div>
     );
